@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane id="AnchorPane" prefHeight="673.0" prefWidth="980.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="podserverapp.PodserverController">
+    <children>
+      <Label alignment="CENTER" layoutX="296.0" layoutY="7.0" text="PodserverApp">
+         <font>
+            <Font name="Britannic Bold" size="64.0" />
+         </font>
+      </Label>
+      <TextArea fx:id="PodserverLogs" layoutX="48.0" layoutY="198.0" prefHeight="410.0" prefWidth="880.0" />
+      <Label layoutX="48.0" layoutY="165.0" text="PodserverLogs" />
+      <Label layoutX="48.0" layoutY="85.0" text="SocketPort" />
+      <TextField fx:id="socketPort" layoutX="48.0" layoutY="112.0" prefHeight="25.0" prefWidth="67.0" text="10000" />
+      <Button fx:id="startButton" layoutX="240.0" layoutY="112.0" mnemonicParsing="false" onMouseClicked="#startPodserver" text="StartServer" />
+      <TextField fx:id="ipAdresa" layoutX="146.0" layoutY="112.0" prefHeight="25.0" prefWidth="67.0" />
+      <Label layoutX="146.0" layoutY="85.0" text="IpAdresa" />
+    </children>
+</AnchorPane>

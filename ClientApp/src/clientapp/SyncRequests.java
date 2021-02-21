@@ -5,20 +5,21 @@
  */
 package clientapp;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
  *
  * @author praksa
  */
-public class SyncRequests implements Comparable<SyncRequests> {
-    
-    private int sentFrom; //1 za klijenta //2 za server
-    private String dirname;
+public class SyncRequests implements Comparable<SyncRequests>, Serializable {
+
+    private static int sentFrom; //1 za klijenta //2 za server
+    private static String fileName;
 
     public SyncRequests(int sentFrom, String dirname) {
         this.sentFrom = sentFrom;
-        this.dirname = dirname;
+        this.fileName = dirname;
     }
 
     public int getSentFrom() {
@@ -30,36 +31,41 @@ public class SyncRequests implements Comparable<SyncRequests> {
     }
 
     public String getDirname() {
-        return dirname;
+        return fileName;
     }
 
     public void setDirname(String dirname) {
-        this.dirname = dirname;
+        this.fileName = dirname;
     }
-    
-      @Override
+
+    @Override
     public int hashCode() {
-        return Objects.hash(sentFrom, dirname);
+        return Objects.hash(sentFrom, fileName);
     }
-    
+
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         SyncRequests employee = (SyncRequests) o;
-        return Double.compare(employee.sentFrom, sentFrom) == 0 &&
-                Objects.equals(dirname, employee.dirname);
+        return Double.compare(employee.sentFrom, sentFrom) == 0
+                && Objects.equals(fileName, employee.fileName);
     }
-    
+
     @Override
     public int compareTo(SyncRequests request) {
-        if(this.getSentFrom()> request.getSentFrom()) {
+        if (this.getSentFrom() > request.getSentFrom()) {
             return 1;
-        } if(this.getSentFrom() < request.getSentFrom()) {
+        }
+        if (this.getSentFrom() < request.getSentFrom()) {
             return -1;
         } else {
             return 0;
         }
     }
-    
+
 }

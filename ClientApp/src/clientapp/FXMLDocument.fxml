@@ -9,7 +9,7 @@
 
 <AnchorPane id="AnchorPane" prefHeight="758.0" prefWidth="1050.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="clientapp.ClientAppController">
     <children>
-        <Button fx:id="getPodserverIp" layoutX="410.0" layoutY="121.0" onMouseClicked="#GetPodserverIPFunction" text="GetPodserverIp" />
+        <Button fx:id="getPodserverIp" layoutX="467.0" layoutY="121.0" onMouseClicked="#GetPodserverIPFunction" text="GetPodserverIp" />
         <Label fx:id="label" layoutX="126" layoutY="120" minHeight="16" minWidth="69" />
       <Label layoutX="389.0" layoutY="14.0" text="ClientApp">
          <font>
@@ -18,13 +18,15 @@
       </Label>
       <TextField fx:id="IPGlavnogServera" layoutX="75.0" layoutY="121.0" />
       <Label layoutX="80.0" layoutY="94.0" text="IP Glavnog Servera" />
-      <TextField fx:id="fileDirTB" layoutX="240.0" layoutY="121.0" />
-      <Label fx:id="fileName" layoutX="240.0" layoutY="94.0" text="FilDirectory" />
+      <TextField fx:id="fileNameTB" layoutX="239.0" layoutY="121.0" prefHeight="25.0" prefWidth="209.0" text="zare.txt" />
+      <Label fx:id="fileName" layoutX="240.0" layoutY="94.0" text="Type the name of the file that you want" />
       <Label layoutX="75.0" layoutY="192.0" prefHeight="17.0" prefWidth="149.0" text="Ip Podservera" />
-      <TextField fx:id="IPPodservera" layoutX="75.0" layoutY="222.0" />
-      <Button fx:id="ConnectToPodserver" layoutX="250.0" layoutY="222.0" mnemonicParsing="false" onMouseClicked="#ConnectToPod" prefHeight="25.0" prefWidth="93.0" text="Connect" />
+      <TextField fx:id="IPPodservera" layoutX="75.0" layoutY="222.0" text="192.168.0.27" />
+      <Button fx:id="ConnectToPodserver" layoutX="332.0" layoutY="222.0" mnemonicParsing="false" onMouseClicked="#ConnectToPod" prefHeight="25.0" prefWidth="93.0" text="Connect" />
       <TextArea fx:id="ClientText" layoutX="61.0" layoutY="293.0" prefHeight="428.0" prefWidth="928.0" />
       <TextArea fx:id="ClientLogs" layoutX="628.0" layoutY="116.0" prefHeight="136.0" prefWidth="256.0" />
       <Label layoutX="628.0" layoutY="94.0" text="Logs" />
+      <TextField fx:id="podServerPort" layoutX="246.0" layoutY="222.0" prefHeight="25.0" prefWidth="79.0" text="10000" />
+      <Label layoutX="246.0" layoutY="192.0" text="PodserverPort" />
     </children>
 </AnchorPane>

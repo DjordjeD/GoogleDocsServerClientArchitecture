@@ -5,8 +5,6 @@
  */
 package clientapp;
 
-
-
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -17,7 +15,7 @@ import javafx.scene.input.MouseEvent;
 public class ClientAppController {
 
     ClientCommunicator clientCommunicator;
-    
+
     @FXML
     private Button getPodserverIp;
 
@@ -25,10 +23,10 @@ public class ClientAppController {
     private Label label;
 
     @FXML
-    public static TextField IPGlavnogServera;
+    private TextField IPGlavnogServera;
 
     @FXML
-    public static TextField fileDirTB;
+    public TextField fileNameTB;
 
     @FXML
     private Label fileName;
@@ -40,14 +38,19 @@ public class ClientAppController {
     private Button ConnectToPodserver;
 
     @FXML
-    public static TextArea ClientText;
+    public TextArea ClientText;
 
     @FXML
-    public static TextArea ClientLogs;
+    public TextArea ClientLogs;
+
+    @FXML
+    private TextField podServerPort;
 
     @FXML
     void ConnectToPod(MouseEvent event) {
-        clientCommunicator= new ClientCommunicator();
+        System.out.println("clientapp.ClientAppController.ConnectToPod()");
+        clientCommunicator = new ClientCommunicator(fileNameTB.getText(), IPPodservera.getText(), Integer.parseInt(podServerPort.getText()),
+                ClientText, ClientLogs);
         clientCommunicator.start();
     }
 
@@ -55,7 +58,5 @@ public class ClientAppController {
     void GetPodserverIPFunction(MouseEvent event) {
 
     }
-
- 
 
 }

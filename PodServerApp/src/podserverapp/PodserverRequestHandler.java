@@ -5,6 +5,7 @@
  */
 package podserverapp;
 
+import java.io.File;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
@@ -100,5 +101,15 @@ class PodserverRequestHandler extends Thread {
         Thread t = new Thread(r);
         t.start();
 
+    }
+
+    private static void deleteAllDirsAndFiles(File dir) {
+        if (dir.isDirectory()) {
+            String[] children = dir.list();
+            for (int i = 0; i < children.length; i++) {
+                deleteAllDirsAndFiles(new File(dir, children[i]));
+            }
+        }
+        dir.delete();
     }
 }

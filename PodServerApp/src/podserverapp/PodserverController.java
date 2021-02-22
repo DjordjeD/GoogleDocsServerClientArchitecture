@@ -10,8 +10,11 @@
  */
 package podserverapp;
 
+import java.io.File;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.application.Application;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
@@ -42,38 +45,33 @@ public class PodserverController {
     void startPodserver(MouseEvent event) {
 
         try {
-            //deleteallfilesanddirs();
+//            File dir = new File("c:\\kdp");
+//            deleteAllDirsAndFiles(dir);
             podserverRequestHandler = new PodserverRequestHandler(Integer.parseInt(socketPort.getText()), PodserverLogs);
             podserverCommunicator = new PodserverCommunicator(PodserverLogs);
 
             podserverRequestHandler.start();
             podserverCommunicator.start();
 
-//            Runnable r = () -> {\
-//
-//                try {
-//                    File file
-//                            = new File("C:\\kdp\\opetnovagara\\zare.txt");
-//                    Scanner sc = new Scanner(file);
-//
-//                    sc.useDelimiter("\\Z");
-//                    String print;
-//
-//                    Platform.runLater(() -> PodserverLogs.appendText(sc.next()));
-//
-//                    // System.out.println(sc.nextLine());
-//                    // append the line on the application thread
-//                } catch (IOException e) {
-//                    //e.printStackTrace();
-//                }
-//            };
-//            // run task on different thread
-//            Thread t = new Thread(r);
-//            t.start();
         } catch (Exception ex) {
             Logger.getLogger(PodserverController.class.getName()).log(Level.SEVERE, null, ex);
         }
 
+    }
+
+    private static void deleteAllDirsAndFiles(File dir) {
+        if (dir.isDirectory()) {
+            String[] children = dir.list();
+            for (int i = 0; i < children.length; i++) {
+                deleteAllDirsAndFiles(new File(dir, children[i]));
+            }
+        }
+        dir.delete();
+    }
+
+    private void setParameters(Application.Parameters params) {
+        List<String> list = params.getRaw();
+        //namesti ovo
     }
 
 }

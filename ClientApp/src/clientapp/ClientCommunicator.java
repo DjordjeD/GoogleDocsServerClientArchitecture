@@ -12,7 +12,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import static java.lang.Thread.sleep;
 import java.net.Socket;
+import java.net.SocketException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
@@ -44,6 +46,7 @@ public class ClientCommunicator extends Thread {
     private static ObjectOutputStream oos;
     private static int fileCount = 0;
     public static Boolean update = false;
+    public static int failedConnections = 0;
 
     @FXML
     public TextArea ClientText;
@@ -61,10 +64,12 @@ public class ClientCommunicator extends Thread {
 
     @Override
     public void run() {
-        try {
-            listenToUpdate(ClientText);
-            System.out.println("clientapp.ClientCommunicator.run()");
-            while (true) {
+        listenToUpdate(ClientText);// da li da update tekst 
+        while (true) {
+
+            try {
+
+                System.out.println("clientapp.ClientCommunicator.run()");
                 //fali ogroman slucaj sta ako klijent nema taj fajl
                 // nece biti da mu nudi da napravi fajl sam, nego ce morati java t oda uradi.
                 // bice nesto hardkodovano fazon kako da on zna gde da napravi taj fajl, bas na tom mestu
@@ -96,9 +101,10 @@ public class ClientCommunicator extends Thread {
                 File root = new File("c:\\kdp");// ovo se cita sa konzole, moze da se dodaje fajl
                 File clientFile = null;
 
-//                if (!root.exists()) {
-//                    root.mkdir();
-//                }
+                if (!root.exists()) {
+                    root.mkdir();
+                }
+
                 Boolean existsOnClient = false;
                 String fileName = filename;
                 try {
@@ -179,7 +185,7 @@ public class ClientCommunicator extends Thread {
 
                     oos.writeObject(new Boolean(true)); // send "Ready"
                     oos.flush();
-
+                    // rollback
                     receiveFile(clientFile);
 
                     oos.writeObject(new Boolean(true)); // send back ok
@@ -231,7 +237,7 @@ public class ClientCommunicator extends Thread {
 
                 System.out.println();
                 System.out.println("Finished sync");
-                ispis("Synced", ClientLogs);
+                ispis("Uspesna sinhronizacija sa " + sock.getInetAddress().toString() + "za faj: " + filename + "\n", ClientLogs);
                 //gui update ovde
                 // ovde fali da se ponovo loaduje fajl u gui.
                 loadFile(ClientText, clientFile);
@@ -240,12 +246,53 @@ public class ClientCommunicator extends Thread {
                 oos.close();
                 ois.close();
                 sock.close();
-                sleep(3000);
-            }
 
-        } catch (Exception e) {
-            System.out.println("NESTO SE SJEBALO" + e.getMessage());
+                failedConnections = 0;
+
+                sleep(3000);
+
+            } catch (SocketException e) {
+
+                try {
+                    failedConnections++;
+
+                    if (failedConnections == 3) {
+
+                        ispis("Podserver " + sock.getInetAddress().toString() + " crkao \n", ClientLogs);
+
+                        oos.close();
+                        ois.close();
+                        sock.close();
+
+                        sock = new Socket(serverIP, port);
+                        oos = new ObjectOutputStream(sock.getOutputStream()); // send directory name to server
+                        ois = new ObjectInputStream(sock.getInputStream());
+
+                        oos.writeObject(new String("HELP"));
+
+                        Vector<String> temp = (Vector<String>) ois.readObject();
+
+                        serverIP = temp.remove(1);
+
+                        oos.close();
+                        ois.close();
+                        sock.close();
+
+                    }
+
+                    sleep(500);
+
+                } catch (Exception ex) {
+                    ex.getMessage();
+                }
+
+            } catch (IOException e) {
+
+            } catch (Exception e) {
+
+            }
         }
+
         //To change body of generated methods, choose Tools | Templates.
     }
 

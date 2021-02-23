@@ -16,10 +16,8 @@
       </Label>
       <TextArea fx:id="PodserverLogs" layoutX="48.0" layoutY="198.0" prefHeight="410.0" prefWidth="880.0" />
       <Label layoutX="48.0" layoutY="165.0" text="PodserverLogs" />
-      <Label layoutX="48.0" layoutY="85.0" text="SocketPort" />
-      <TextField fx:id="socketPort" layoutX="48.0" layoutY="112.0" prefHeight="25.0" prefWidth="67.0" text="10000" />
-      <Button fx:id="startButton" layoutX="240.0" layoutY="112.0" mnemonicParsing="false" onMouseClicked="#startPodserver" text="StartServer" />
-      <TextField fx:id="ipAdresa" layoutX="146.0" layoutY="112.0" prefHeight="25.0" prefWidth="67.0" />
-      <Label layoutX="146.0" layoutY="85.0" text="IpAdresa" />
+      <TextField fx:id="socketPort" layoutX="48.0" layoutY="112.0" prefHeight="25.0" prefWidth="118.0" text="10000" />
+      <Button fx:id="startButton" layoutX="201.0" layoutY="112.0" mnemonicParsing="false" onMouseClicked="#startPodserver" text="StartPodServer" />
+      <Label layoutX="48.0" layoutY="83.0" text="Socket port za klijente" />
     </children>
 </AnchorPane>

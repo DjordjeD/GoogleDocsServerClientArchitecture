@@ -24,7 +24,7 @@ class PodserverRequestHandler extends Thread {
 
     public static PriorityBlockingQueue<SyncRequests> requestBuffer;
     public SyncRequests newsyncRequest;
-    private int requestPort;
+    private static int requestPort;
     private final String DONE = "DONE";
     private static Socket sock;
     private static ObjectOutputStream oos;
@@ -37,7 +37,7 @@ class PodserverRequestHandler extends Thread {
     public TextArea PodserverLogs;
 
     PodserverRequestHandler(int port, TextArea PodserverLogs) {
-        this.requestPort = port;
+        requestPort = port;
         requestBuffer = new PriorityBlockingQueue<SyncRequests>();
         this.PodserverLogs = PodserverLogs;
 
@@ -48,7 +48,7 @@ class PodserverRequestHandler extends Thread {
         System.out.println("Starting File Sync Server!");
         try {
 
-            servsock = new ServerSocket(10000);
+            servsock = new ServerSocket(requestPort);//10000
 
             while (true) {
 

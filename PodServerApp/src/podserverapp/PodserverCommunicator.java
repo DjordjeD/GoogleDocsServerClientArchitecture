@@ -42,6 +42,10 @@ class PodserverCommunicator extends Thread {
     private static ServerSocket servsock;
     private static String baseDir;
     private static String filename;
+    public static int rollbackCase;
+    public static File podserverFile;
+
+    public File backup;
 
     @FXML
     public TextArea PodserverLogs;
@@ -71,11 +75,11 @@ class PodserverCommunicator extends Thread {
                 }
                 filename = PodserverRequestHandler.requestBuffer.remove().getDirname();
 
-                ispis("Trenutno updateuje:" + filename + sock.getInetAddress().toString(), PodserverLogs);
+                ispis("Trenutno proverava: " + filename + sock.getInetAddress().toString() + " Vreme :" + java.time.LocalTime.now().toString(), PodserverLogs);
 
                 //proveri da li imas ovaj fajl na podserveru
                 File root = new File("c:\\kdp");
-                File podserverFile = null;
+                podserverFile = null;
                 String fileName = filename;
                 try {
                     boolean recursive = true;
@@ -128,6 +132,7 @@ class PodserverCommunicator extends Thread {
                     oos.flush();
                     // ovde kopiraj taj fajl
                     // ako baci exception jebiga uzmi stari
+                    rollbackCase = 1;
                     receiveFile(podserverFile);
 
                     podserverFile.setLastModified(clientModifiedTime);
@@ -174,7 +179,14 @@ class PodserverCommunicator extends Thread {
                         oos.writeObject(new Boolean(true)); // send back ok
                         oos.flush();
 
+                        backup = new File(root, "backup.txt");
+                        Path source1 = podserverFile.toPath();
+                        Files.copy(source1, backup.toPath());
+                        rollbackCase = 3;
+
                         receiveFile(podserverFile);
+
+                        Files.delete(backup.toPath());
 
                         oos.writeObject(new Boolean(true)); // send back ok
                         oos.flush();
@@ -207,7 +219,7 @@ class PodserverCommunicator extends Thread {
                 oos.flush();
 
                 System.out.print("Finished sync...");
-
+                ispis("Uspesno sinhronizovao " + filename + sock.getInetAddress().toString() + " Vreme :" + java.time.LocalTime.now().toString(), PodserverLogs);
                 // loadFile(PodserverLogs);
                 //PodserverController.PodserverLogs.appendText("finished sync");
                 ois.readObject();
@@ -230,6 +242,8 @@ class PodserverCommunicator extends Thread {
 
                 System.out.println("Greska" + e.getMessage());
 
+            } catch (RollbackException e) {
+                rollbackFile();
             } catch (Exception e) {
                 System.out.println("Greska" + e.getMessage());
             }
@@ -251,17 +265,22 @@ class PodserverCommunicator extends Thread {
         reinitConn();
     }
 
-    private static void receiveFile(File dir) throws Exception {
-        FileOutputStream wr = new FileOutputStream(dir);
-        byte[] outBuffer = new byte[sock.getReceiveBufferSize()];
-        int bytesReceived = 0;
-        while ((bytesReceived = ois.read(outBuffer)) > 0) {
-            wr.write(outBuffer, 0, bytesReceived);
-        }
-        wr.flush();
-        wr.close();
+    private static void receiveFile(File dir) throws RollbackException {
 
-        reinitConn();
+        try {
+            FileOutputStream wr = new FileOutputStream(dir);
+            byte[] outBuffer = new byte[sock.getReceiveBufferSize()];
+            int bytesReceived = 0;
+            while ((bytesReceived = ois.read(outBuffer)) > 0) {
+                wr.write(outBuffer, 0, bytesReceived);
+            }
+            wr.flush();
+            wr.close();
+
+            reinitConn();
+        } catch (Exception ex) {
+            throw new RollbackException(DONE);
+        }
     }
 
     private static void reinitConn() throws Exception {
@@ -311,6 +330,7 @@ class PodserverCommunicator extends Thread {
         t.start();
 
     }
+
     /* private static void visitAllDirsAndFiles(File dir) throws Exception {
         oos.writeObject(new String(dir.getAbsolutePath().substring((dir.getAbsolutePath().indexOf(baseDir) + baseDir.length()))));
         oos.flush();
@@ -363,4 +383,17 @@ class PodserverCommunicator extends Thread {
 //		}
 //		dir.delete();
 //	}
+    private void rollbackFile() {
+        try {
+            if (rollbackCase == 2) {
+                Files.copy(backup.toPath(), podserverFile.toPath());
+                Files.delete(backup.toPath());
+            }
+            if (rollbackCase == 1) {
+                Files.delete(backup.toPath());
+            }
+        } catch (Exception e) {
+        }
+
+    }
 }

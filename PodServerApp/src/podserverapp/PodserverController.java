@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
@@ -46,9 +47,11 @@ public class PodserverController {
             podserverRequestHandler = new PodserverRequestHandler(Integer.parseInt(socketPort.getText()), PodserverLogs);
             podserverCommunicator = new PodserverCommunicator(PodserverLogs);
 
+            ispis("Poceo podserver ", PodserverLogs);
+
             podserverRequestHandler.start();
             podserverCommunicator.start();
-
+            startButton.setDisable(true);
         } catch (Exception ex) {
             Logger.getLogger(PodserverController.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -68,6 +71,20 @@ public class PodserverController {
     private void setParameters(Application.Parameters params) {
         List<String> list = params.getRaw();
         //namesti ovo
+    }
+
+    private static void ispis(String ispis, TextArea PodserverLogs) {
+        Runnable r = () -> {
+
+            Platform.runLater(() -> PodserverLogs.appendText(ispis));
+
+            // System.out.println(sc.nextLine());
+            // append the line on the application thread
+        };
+        // run task on different thread
+        Thread t = new Thread(r);
+        t.start();
+
     }
 
 }

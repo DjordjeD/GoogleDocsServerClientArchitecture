@@ -14,12 +14,15 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Scanner;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextArea;
@@ -49,10 +52,16 @@ class PodserverCommunicator extends Thread {
 
     @Override
     public void run() {
+
         try {
             servsock = new ServerSocket(PORT_NUMBER);
-            while (true) {
-                //napravi sokete
+        } catch (IOException ex) {
+            Logger.getLogger(PodserverCommunicator.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        //napravi sokete while (true) {
+        while (true) {
+            try {
                 sock = servsock.accept();
                 oos = new ObjectOutputStream(sock.getOutputStream());
                 ois = new ObjectInputStream(sock.getInputStream());
@@ -61,6 +70,8 @@ class PodserverCommunicator extends Thread {
                 while (PodserverRequestHandler.requestBuffer.isEmpty()) {
                 }
                 filename = PodserverRequestHandler.requestBuffer.remove().getDirname();
+
+                ispis("Trenutno updateuje:" + filename + sock.getInetAddress().toString(), PodserverLogs);
 
                 //proveri da li imas ovaj fajl na podserveru
                 File root = new File("c:\\kdp");
@@ -115,7 +126,8 @@ class PodserverCommunicator extends Thread {
 
                     oos.writeObject(new Integer(direction));
                     oos.flush();
-
+                    // ovde kopiraj taj fajl
+                    // ako baci exception jebiga uzmi stari
                     receiveFile(podserverFile);
 
                     podserverFile.setLastModified(clientModifiedTime);
@@ -204,11 +216,24 @@ class PodserverCommunicator extends Thread {
                 ois.close();
                 sock.close();
 
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+            } catch (SocketException e) {
+                System.out.println("Greska" + e.getMessage());
+                try {
+                    oos.close();
+                    ois.close();
+                    sock.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(PodserverCommunicator.class.getName()).log(Level.SEVERE, null, ex);
+                }
 
+            } catch (IOException e) {
+
+                System.out.println("Greska" + e.getMessage());
+
+            } catch (Exception e) {
+                System.out.println("Greska" + e.getMessage());
+            }
+        }
     }
 
     private static void sendFile(File dir) throws Exception {
@@ -251,7 +276,7 @@ class PodserverCommunicator extends Thread {
     private static void ispis(String ispis, TextArea PodserverLogs) {
         Runnable r = () -> {
 
-            Platform.runLater(() -> PodserverLogs.appendText(ispis));
+            Platform.runLater(() -> PodserverLogs.appendText(ispis + "\n"));
 
             // System.out.println(sc.nextLine());
             // append the line on the application thread

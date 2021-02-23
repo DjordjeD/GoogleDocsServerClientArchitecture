@@ -38,7 +38,7 @@ class PodserverRequestHandler extends Thread {
 
     PodserverRequestHandler(int port, TextArea PodserverLogs) {
         this.requestPort = port;
-        this.requestBuffer = new PriorityBlockingQueue<SyncRequests>();
+        requestBuffer = new PriorityBlockingQueue<SyncRequests>();
         this.PodserverLogs = PodserverLogs;
 
     }
@@ -54,6 +54,7 @@ class PodserverRequestHandler extends Thread {
 
                 sock = servsock.accept();
 
+                System.out.println("podserverapp.PodserverRequestHandler.run()");
                 ois = new ObjectInputStream(sock.getInputStream());
 
                 Vector<String> vec = new Vector<String>();

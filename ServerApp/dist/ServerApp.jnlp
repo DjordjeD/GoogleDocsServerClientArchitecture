@@ -8,7 +8,12 @@
   </information>
   <resources>
     <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
-    <jar href="ServerApp.jar" size="2718" download="eager" />
+    <jar href="ServerApp.jar" size="12697" download="eager" />
+    <jar href="lib\commons-io-2.8.0-javadoc.jar" size="1138955" download="eager" />
+    <jar href="lib\commons-io-2.8.0-sources.jar" size="356860" download="eager" />
+    <jar href="lib\commons-io-2.8.0-test-sources.jar" size="312190" download="eager" />
+    <jar href="lib\commons-io-2.8.0-tests.jar" size="513616" download="eager" />
+    <jar href="lib\commons-io-2.8.0.jar" size="285424" download="eager" />
   </resources>
   <applet-desc  width="800" height="600" main-class="com.javafx.main.NoJavaFXFallback"  name="ServerApp" >
     <param name="requiredFXVersion" value="8.0+"/>

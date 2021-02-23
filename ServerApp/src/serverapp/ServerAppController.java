@@ -5,6 +5,7 @@
  */
 package serverapp;
 
+import java.util.Vector;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -16,7 +17,7 @@ public class ServerAppController {
 
     private ServerRequestHandler serverRequestHandler;
     private ServerCommunicator serverCommunicator;
-    
+
     @FXML
     private Label label;
 
@@ -39,16 +40,65 @@ public class ServerAppController {
     private Button StartServerFunction;
 
     @FXML
-    void StartServerFunction(MouseEvent event) {
-        
-        serverRequestHandler= new ServerRequestHandler(Integer.parseInt(SocketPort.getText()));
-        serverCommunicator = new ServerCommunicator();
-        
-        //vise niti treba da se napravi;
-        serverRequestHandler.start();
-        serverCommunicator.start();
-        
+    private TextField numThreads;
 
+    @FXML
+    private Button addPodserver;
+
+    static Vector<String> podservers = null;
+
+    @FXML
+    public void initialize() {
+        StartServerFunction.setDisable(true);
+    }
+
+    @FXML
+    void StartServerFunction(MouseEvent event) {
+
+        ServerLogs.appendText("Starting Server");
+        //= args od kolko ima uzima ip adrese sve
+        int numberOfThreads = Integer.parseInt(numThreads.getText()); // kolko niti puni request handler
+        //serverRequestHandler = new ServerRequestHandler(Integer.parseInt(SocketPort.getText()), ServerLogs, ServerFilesText, Podservers);
+        serverCommunicator = new ServerCommunicator(ServerLogs, ServerFilesText, Podservers);
+
+        //vise niti treba da se napravi;
+        Thread[] threads = new Thread[numberOfThreads];
+        for (int i = 0; i < threads.length; i++) {
+            threads[i] = new ServerRequestHandler(Integer.parseInt(SocketPort.getText()), ServerLogs, ServerFilesText, Podservers
+            );
+            threads[i].start();
+        }
+
+        serverCommunicator.start();
+        serverRequestHandler.listenToClients();
+
+    }
+
+    @FXML
+    void addNewPodserver(MouseEvent event) {
+
+        Boolean flag = true;
+        String newPodserver = addPodserver.getText();
+
+        podservers = new Vector<String>();
+
+        if (!podservers.isEmpty()) {
+            for (String podserver : podservers) {
+
+                if (podserver.equalsIgnoreCase(newPodserver)) {
+                    flag = false;
+                }
+            }
+        }
+        //provera da li vec postoji, ne sme duplo
+        if (flag) {
+            podservers.add(IPAdress.getText());
+            Podservers.appendText(IPAdress.getText());
+
+        }
+        if (!podservers.isEmpty()) {
+            StartServerFunction.setDisable(false);
+        }
     }
 
 }

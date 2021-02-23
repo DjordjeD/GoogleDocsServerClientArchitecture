@@ -1,21 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane id="AnchorPane" prefHeight="654.0" prefWidth="1092.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.171" fx:controller="serverapp.FXMLDocumentController">
+<AnchorPane id="AnchorPane" prefHeight="742.0" prefWidth="1170.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="serverapp.ServerAppController">
     <children>
         <Label fx:id="label" layoutX="126" layoutY="120" minHeight="16" minWidth="69" />
-      <Label layoutX="51.0" layoutY="71.0" prefHeight="17.0" prefWidth="110.0" text="ServerAppFiles" />
-      <TextArea layoutX="46.0" layoutY="368.0" prefHeight="200.0" prefWidth="1022.0" />
-      <Label layoutX="51.0" layoutY="342.0" prefHeight="17.0" prefWidth="110.0" text="ServerLogs" />
-      <TextArea layoutX="46.0" layoutY="107.0" prefHeight="200.0" prefWidth="1022.0" />
+      <Label layoutX="46.0" layoutY="150.0" prefHeight="17.0" prefWidth="110.0" text="ServerAppFiles" />
+      <TextArea fx:id="ServerLogs" layoutX="46.0" layoutY="471.0" prefHeight="200.0" prefWidth="1022.0" />
+      <Label layoutX="46.0" layoutY="427.0" prefHeight="17.0" prefWidth="110.0" text="ServerLogs" />
+      <TextArea fx:id="ServerFilesText" layoutX="46.0" layoutY="190.0" prefHeight="190.0" prefWidth="413.0" />
       <Label alignment="CENTER" layoutX="429.0" layoutY="14.0" text="ServerApp">
          <font>
-            <Font name="Berlin Sans FB Bold" size="36.0" />
+            <Font name="Britannic Bold" size="48.0" />
          </font>
       </Label>
+      <TextArea fx:id="Podservers" layoutX="577.0" layoutY="190.0" prefHeight="190.0" prefWidth="434.0" />
+      <Label layoutX="577.0" layoutY="150.0" prefHeight="17.0" prefWidth="110.0" text="Podservers" />
+      <Label layoutX="52.0" layoutY="75.0" text="SocketPort" />
+      <TextField fx:id="SocketPort" layoutX="46.0" layoutY="108.0" prefHeight="25.0" prefWidth="69.0" text="10000" />
+      <TextField fx:id="IPAdress" layoutX="577.0" layoutY="108.0" prefHeight="25.0" prefWidth="151.0" text="192.168.0.27" />
+      <Label layoutX="579.0" layoutY="84.0" text="IpAdresaPodservera" />
+      <Button fx:id="StartServerFunction" layoutX="253.0" layoutY="108.0" mnemonicParsing="false" onMouseClicked="#StartServerFunction" text="StartServer" />
+      <TextField fx:id="numThreads" layoutX="140.0" layoutY="108.0" prefHeight="25.0" prefWidth="58.0" text="2" />
+      <Label layoutX="132.0" layoutY="75.0" text="NumberOfThreads" />
+      <Button fx:id="addPodserver" layoutX="759.0" layoutY="108.0" mnemonicParsing="false" onMouseClicked="#addNewPodserver" text="AddPodserver" />
     </children>
 </AnchorPane>

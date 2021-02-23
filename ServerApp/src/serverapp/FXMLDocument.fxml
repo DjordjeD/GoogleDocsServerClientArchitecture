@@ -23,8 +23,11 @@
       <Label layoutX="577.0" layoutY="150.0" prefHeight="17.0" prefWidth="110.0" text="Podservers" />
       <Label layoutX="52.0" layoutY="75.0" text="SocketPort" />
       <TextField fx:id="SocketPort" layoutX="46.0" layoutY="108.0" prefHeight="25.0" prefWidth="69.0" text="10000" />
-      <TextField fx:id="IPAdress" layoutX="145.0" layoutY="108.0" prefHeight="25.0" prefWidth="151.0" />
-      <Label layoutX="145.0" layoutY="75.0" text="IpAdresa" />
-      <Button fx:id="StartServerFunction" layoutX="362.0" layoutY="108.0" mnemonicParsing="false" onMouseClicked="#StartServerFunction" text="StartServer" />
+      <TextField fx:id="IPAdress" layoutX="577.0" layoutY="108.0" prefHeight="25.0" prefWidth="151.0" text="192.168.0.27" />
+      <Label layoutX="579.0" layoutY="84.0" text="IpAdresaPodservera" />
+      <Button fx:id="StartServerFunction" layoutX="253.0" layoutY="108.0" mnemonicParsing="false" onMouseClicked="#StartServerFunction" text="StartServer" />
+      <TextField fx:id="numThreads" layoutX="140.0" layoutY="108.0" prefHeight="25.0" prefWidth="58.0" text="2" />
+      <Label layoutX="132.0" layoutY="75.0" text="NumberOfThreads" />
+      <Button fx:id="addPodserver" layoutX="759.0" layoutY="108.0" mnemonicParsing="false" onMouseClicked="#addNewPodserver" text="AddPodserver" />
     </children>
 </AnchorPane>

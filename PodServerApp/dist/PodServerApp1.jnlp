@@ -8,7 +8,7 @@
   </information>
   <resources>
     <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
-    <jar href="PodServerApp1.jar" size="12575" download="eager" />
+    <jar href="PodServerApp1.jar" size="13192" download="eager" />
     <jar href="lib\commons-io-2.8.0-javadoc.jar" size="1138955" download="eager" />
     <jar href="lib\commons-io-2.8.0-sources.jar" size="356860" download="eager" />
     <jar href="lib\commons-io-2.8.0-test-sources.jar" size="312190" download="eager" />

@@ -26,6 +26,7 @@ public class ClientAppController {
     private static ObjectOutputStream oos;
     private static ObjectInputStream ois;
     private static ServerSocket servsock;
+    public static String ipGlavnog;
 
     @FXML
     private Button getPodserverIp;
@@ -73,7 +74,8 @@ public class ClientAppController {
     void GetPodserverIPFunction(MouseEvent event) {
         try {
             //tri puta pokusava
-            sock = new Socket(IPGlavnogServera.getText(), Integer.parseInt(GlavniServerPort.getText()));
+            ipGlavnog = IPGlavnogServera.getText();
+            sock = new Socket(ipGlavnog, Integer.parseInt(GlavniServerPort.getText()));
             oos = new ObjectOutputStream(sock.getOutputStream());
             ois = new ObjectInputStream(sock.getInputStream());
 

@@ -38,7 +38,7 @@ public class ClientCommunicator extends Thread {
     private static final int PORT_NUMBER = 17555;
     private int port;
     private static String filename;
-    private static String serverIP;
+    private static String podServerIP;
     private static String fullDirName;
     private static final String DONE = "DONE";
     private static Socket sock;
@@ -57,24 +57,22 @@ public class ClientCommunicator extends Thread {
     ClientCommunicator(String filename, String serverip, int serverport, TextArea ClientText, TextArea ClientLogs) {
         this.filename = filename;
         port = serverport;
-        serverIP = serverip;
+        podServerIP = serverip;
         this.ClientLogs = ClientLogs;
         this.ClientText = ClientText;
     }
 
     @Override
     public void run() {
-        listenToUpdate(ClientText);// da li da update tekst 
+
+        listenToUpdate(ClientText);
+        System.out.println("clientapp.ClientCommunicator.run()");
         while (true) {
 
             try {
-
-                System.out.println("clientapp.ClientCommunicator.run()");
                 //fali ogroman slucaj sta ako klijent nema taj fajl
-                // nece biti da mu nudi da napravi fajl sam, nego ce morati java t oda uradi.
                 // bice nesto hardkodovano fazon kako da on zna gde da napravi taj fajl, bas na tom mestu
-
-                sock = new Socket(serverIP, port);
+                sock = new Socket(podServerIP, port);
                 oos = new ObjectOutputStream(sock.getOutputStream()); // send directory name to server
                 Vector<String> requestVec = new Vector<String>();
                 requestVec.add(filename);
@@ -88,7 +86,7 @@ public class ClientCommunicator extends Thread {
 
 ///--------------------------------------------------------------------------------------------------
                 //ClientAppController.ClientLogs.appendText("Ubacen zahtev od");
-                sock = new Socket(serverIP, PORT_NUMBER);
+                sock = new Socket(podServerIP, PORT_NUMBER);
                 ois = new ObjectInputStream(sock.getInputStream());
                 oos = new ObjectOutputStream(sock.getOutputStream());
                 //ceka da primi da li fajl postoji na serveru
@@ -104,7 +102,6 @@ public class ClientCommunicator extends Thread {
                 if (!root.exists()) {
                     root.mkdir();
                 }
-
                 Boolean existsOnClient = false;
                 String fileName = filename;
                 try {
@@ -185,7 +182,7 @@ public class ClientCommunicator extends Thread {
 
                     oos.writeObject(new Boolean(true)); // send "Ready"
                     oos.flush();
-                    // rollback
+
                     receiveFile(clientFile);
 
                     oos.writeObject(new Boolean(true)); // send back ok
@@ -237,7 +234,7 @@ public class ClientCommunicator extends Thread {
 
                 System.out.println();
                 System.out.println("Finished sync");
-                ispis("Uspesna sinhronizacija sa " + sock.getInetAddress().toString() + "za faj: " + filename + "\n", ClientLogs);
+                ispis("Synced", ClientLogs);
                 //gui update ovde
                 // ovde fali da se ponovo loaduje fajl u gui.
                 loadFile(ClientText, clientFile);
@@ -246,9 +243,7 @@ public class ClientCommunicator extends Thread {
                 oos.close();
                 ois.close();
                 sock.close();
-
                 failedConnections = 0;
-
                 sleep(3000);
 
             } catch (SocketException e) {
@@ -256,15 +251,15 @@ public class ClientCommunicator extends Thread {
                 try {
                     failedConnections++;
 
-                    if (failedConnections == 3) {
+                    if (failedConnections == 2) {
 
-                        ispis("Podserver " + sock.getInetAddress().toString() + " crkao \n", ClientLogs);
-
+                        ispis("Podserver " + sock.getInetAddress() + " crkao \n", ClientLogs);
+                        //sleep(100000);
                         oos.close();
                         ois.close();
                         sock.close();
 
-                        sock = new Socket(serverIP, port);
+                        sock = new Socket(ClientAppController.ipGlavnog, 10001);
                         oos = new ObjectOutputStream(sock.getOutputStream()); // send directory name to server
                         ois = new ObjectInputStream(sock.getInputStream());
 
@@ -272,7 +267,7 @@ public class ClientCommunicator extends Thread {
 
                         Vector<String> temp = (Vector<String>) ois.readObject();
 
-                        serverIP = temp.remove(1);
+                        podServerIP = temp.remove(1);
 
                         oos.close();
                         ois.close();
@@ -291,9 +286,8 @@ public class ClientCommunicator extends Thread {
             } catch (Exception e) {
 
             }
-        }
 
-        //To change body of generated methods, choose Tools | Templates.
+        }//To change body of generated methods, choose Tools | Templates.
     }
 
     private static void sendFile(File dir) throws Exception {
@@ -344,7 +338,7 @@ public class ClientCommunicator extends Thread {
         ois.close();
         oos.close();
         sock.close();
-        sock = new Socket(serverIP, PORT_NUMBER);
+        sock = new Socket(podServerIP, PORT_NUMBER);
 
         ois = new ObjectInputStream(sock.getInputStream());
         oos = new ObjectOutputStream(sock.getOutputStream());
@@ -356,7 +350,7 @@ public class ClientCommunicator extends Thread {
         ois.close();
         oos.close();
         sock.close();
-        sock = new Socket(serverIP, 10000);
+        sock = new Socket(podServerIP, 10000);
 
         ois = new ObjectInputStream(sock.getInputStream());
         oos = new ObjectOutputStream(sock.getOutputStream());

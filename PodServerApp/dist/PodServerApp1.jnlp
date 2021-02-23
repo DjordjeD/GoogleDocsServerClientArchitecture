@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jnlp spec="1.0" xmlns:jfx="http://javafx.com" href="PodServerApp1.jnlp">
+  <information>
+    <title>PodServerApp1</title>
+    <vendor>praksa</vendor>
+    <description>null</description>
+    <offline-allowed/>
+  </information>
+  <resources>
+    <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
+    <jar href="PodServerApp1.jar" size="12575" download="eager" />
+    <jar href="lib\commons-io-2.8.0-javadoc.jar" size="1138955" download="eager" />
+    <jar href="lib\commons-io-2.8.0-sources.jar" size="356860" download="eager" />
+    <jar href="lib\commons-io-2.8.0-test-sources.jar" size="312190" download="eager" />
+    <jar href="lib\commons-io-2.8.0-tests.jar" size="513616" download="eager" />
+    <jar href="lib\commons-io-2.8.0.jar" size="285424" download="eager" />
+  </resources>
+  <applet-desc  width="800" height="600" main-class="com.javafx.main.NoJavaFXFallback"  name="PodServerApp1" >
+    <param name="requiredFXVersion" value="8.0+"/>
+  </applet-desc>
+  <jfx:javafx-desc  width="800" height="600" main-class="podserverapp.PodServerApp"  name="PodServerApp1" />
+  <update check="always"/>
+</jnlp>

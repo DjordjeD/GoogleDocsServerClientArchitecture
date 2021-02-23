@@ -7,28 +7,29 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane id="AnchorPane" prefHeight="758.0" prefWidth="1050.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="clientapp.ClientAppController">
+<AnchorPane id="AnchorPane" prefHeight="679.0" prefWidth="870.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="clientapp.ClientAppController">
     <children>
-        <Button fx:id="getPodserverIp" layoutX="467.0" layoutY="121.0" onMouseClicked="#GetPodserverIPFunction" text="GetPodserverIp" />
+        <Button fx:id="getPodserverIp" layoutX="246.0" layoutY="172.0" onMouseClicked="#GetPodserverIPFunction" text="GetPodserverIp" />
         <Label fx:id="label" layoutX="126" layoutY="120" minHeight="16" minWidth="69" />
-      <Label layoutX="389.0" layoutY="14.0" text="ClientApp">
+      <Label layoutX="335.0" layoutY="14.0" text="ClientApp">
          <font>
             <Font name="Britannic Bold" size="48.0" />
          </font>
       </Label>
-      <TextField fx:id="IPGlavnogServera" layoutX="75.0" layoutY="121.0" />
+      <TextField fx:id="IPGlavnogServera" layoutX="75.0" layoutY="121.0" text="192.168.0.19" />
       <Label layoutX="80.0" layoutY="94.0" text="IP Glavnog Servera" />
       <TextField fx:id="fileNameTB" layoutX="239.0" layoutY="121.0" prefHeight="25.0" prefWidth="209.0" text="zare.txt" />
-      <Label fx:id="fileName" layoutX="240.0" layoutY="94.0" text="Type the name of the file that you want" />
+      <Label fx:id="fileName" layoutX="221.0" layoutY="70.0" prefHeight="48.0" prefWidth="246.0" text="Type the name of the file that you want if you don't know the name, press AddFile button" textAlignment="CENTER" wrapText="true" />
       <Label layoutX="75.0" layoutY="214.0" prefHeight="17.0" prefWidth="149.0" text="Ip Podservera" />
       <TextField fx:id="IPPodservera" layoutX="75.0" layoutY="240.0" text="192.168.0." />
       <Button fx:id="ConnectToPodserver" layoutX="335.0" layoutY="240.0" mnemonicParsing="false" onMouseClicked="#ConnectToPod" prefHeight="25.0" prefWidth="93.0" text="Connect" />
-      <TextArea fx:id="ClientText" layoutX="61.0" layoutY="293.0" prefHeight="428.0" prefWidth="928.0" />
-      <TextArea fx:id="ClientLogs" layoutX="628.0" layoutY="116.0" prefHeight="136.0" prefWidth="256.0" />
-      <Label layoutX="628.0" layoutY="94.0" text="Logs" />
+      <TextArea fx:id="ClientText" layoutX="68.0" layoutY="302.0" prefHeight="322.0" prefWidth="768.0" />
+      <TextArea fx:id="ClientLogs" layoutX="618.0" layoutY="129.0" prefHeight="136.0" prefWidth="220.0" />
+      <Label layoutX="618.0" layoutY="103.0" text="Logs" />
       <TextField fx:id="podServerPort" layoutX="244.0" layoutY="240.0" prefHeight="25.0" prefWidth="79.0" text="10000" />
       <Label layoutX="246.0" layoutY="214.0" text="PodserverPort" />
       <TextField fx:id="GlavniServerPort" layoutX="75.0" layoutY="172.0" text="10001" />
       <Label layoutX="76.0" layoutY="155.0" text="Glavni Server Port" />
+      <Button fx:id="addFile" layoutX="467.0" layoutY="116.0" mnemonicParsing="false" onMouseClicked="#addNewFile" text="AddFile" />
     </children>
 </AnchorPane>

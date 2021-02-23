@@ -16,7 +16,7 @@
             <Font name="Britannic Bold" size="48.0" />
          </font>
       </Label>
-      <TextField fx:id="IPGlavnogServera" layoutX="75.0" layoutY="121.0" />
+      <TextField fx:id="IPGlavnogServera" layoutX="75.0" layoutY="121.0" text="192.168.0.19" />
       <Label layoutX="80.0" layoutY="94.0" text="IP Glavnog Servera" />
       <TextField fx:id="fileNameTB" layoutX="239.0" layoutY="121.0" prefHeight="25.0" prefWidth="209.0" text="zare.txt" />
       <Label fx:id="fileName" layoutX="240.0" layoutY="94.0" text="Type the name of the file that you want" />

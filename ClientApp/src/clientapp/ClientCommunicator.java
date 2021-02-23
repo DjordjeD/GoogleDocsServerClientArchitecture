@@ -47,6 +47,10 @@ public class ClientCommunicator extends Thread {
     private static int fileCount = 0;
     public static Boolean update = false;
     public static int failedConnections = 0;
+    public static int rollbackCase;
+    public static File clientFile;
+
+    public File backup;
 
     @FXML
     public TextArea ClientText;
@@ -80,6 +84,7 @@ public class ClientCommunicator extends Thread {
                 //SyncRequests newRequest = new SyncRequests(1, filename);
                 oos.writeObject(requestVec);
                 oos.flush();
+                oos.close();
                 //reinitConn2();
                 // prvi ceka na portu koji je korisnik definisao
                 // sluzi
@@ -97,7 +102,7 @@ public class ClientCommunicator extends Thread {
                 // skipping the base dir as it already should be set up on the server
                 //String[] children = baseDir.list();
                 File root = new File("c:\\kdp");// ovo se cita sa konzole, moze da se dodaje fajl
-                File clientFile = null;
+                clientFile = null;
 
                 if (!root.exists()) {
                     root.mkdir();
@@ -182,7 +187,7 @@ public class ClientCommunicator extends Thread {
 
                     oos.writeObject(new Boolean(true)); // send "Ready"
                     oos.flush();
-
+                    rollbackCase = 0;
                     receiveFile(clientFile);
 
                     oos.writeObject(new Boolean(true)); // send back ok
@@ -218,7 +223,15 @@ public class ClientCommunicator extends Thread {
                     oos.writeObject(new Boolean(true)); // send "Ready"
                     oos.flush();
 
+                    //make a backup in case something goes wrong when sending
+                    backup = new File(root, "backup.txt");
+                    Path source1 = clientFile.toPath();
+                    Files.copy(source1, backup.toPath());
+                    rollbackCase = 3;
+
                     receiveFile(clientFile);
+
+                    Files.delete(backup.toPath());
 
                     oos.writeObject(new Boolean(true)); // send back ok
                     oos.flush();
@@ -283,8 +296,10 @@ public class ClientCommunicator extends Thread {
 
             } catch (IOException e) {
 
+            } catch (NoSuchMethodError e) {
+                rollbackFile();
             } catch (Exception e) {
-
+                e.printStackTrace();
             }
 
         }//To change body of generated methods, choose Tools | Templates.
@@ -307,19 +322,22 @@ public class ClientCommunicator extends Thread {
         // printDebug(true, dir);
     }
 
-    private static void receiveFile(File dir) throws Exception {
-        FileOutputStream wr = new FileOutputStream(dir);
-        byte[] outBuffer = new byte[sock.getReceiveBufferSize()];
-        int bytesReceived = 0;
-        while ((bytesReceived = ois.read(outBuffer)) > 0) {
-            wr.write(outBuffer, 0, bytesReceived);
+    private static void receiveFile(File dir) throws NoSuchMethodError {// dummy exception
+        try {
+            FileOutputStream wr = new FileOutputStream(dir);
+            byte[] outBuffer = new byte[sock.getReceiveBufferSize()];
+            int bytesReceived = 0;
+            while ((bytesReceived = ois.read(outBuffer)) > 0) {
+                wr.write(outBuffer, 0, bytesReceived);
+            }
+            wr.flush();
+            wr.close();
+
+            reinitConn();
+        } catch (Exception e) {
+            throw new NoSuchMethodError();
         }
-        wr.flush();
-        wr.close();
 
-        reinitConn();
-
-        // printDebug(false, dir);
     }
 
     private static void printDebug(Boolean sending, File dir) {
@@ -398,18 +416,40 @@ public class ClientCommunicator extends Thread {
         Runnable r = () -> {
 
             textArea.textProperty().addListener(new ChangeListener<String>() {
+                int i = 0;
+
                 @Override
                 public void changed(final ObservableValue<? extends String> observable, final String oldValue, final String newValue) {
                     // this will run whenever text is changed
-                    update = true;
+                    i++;
+                    if (i == 3) {
+                        update = true;
+                        i = 0;
+                    }
                     System.out.println("KeyPressed");
+
                 }
+
             });
 
         };
         // run task on different thread
         Thread t = new Thread(r);
         t.start();
+
+    }
+
+    private void rollbackFile() {
+        try {
+            if (rollbackCase == 3) {
+                Files.copy(backup.toPath(), clientFile.toPath());
+                Files.delete(backup.toPath());
+            }
+            if (rollbackCase == 0) {
+                Files.delete(backup.toPath());
+            }
+        } catch (Exception e) {
+        }
 
     }
     /* private static File visitAllDirsAndFiles(File dir, String filename) throws Exception {
@@ -545,4 +585,5 @@ public class ClientCommunicator extends Thread {
 		}
 	}
      */
+
 }

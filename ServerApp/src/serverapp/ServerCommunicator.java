@@ -123,7 +123,7 @@ class ServerCommunicator extends Thread {
                         if (file.getName().equals(fileName)) {
                             serverFile = new File(file.getPath());
                             existsOnClient = true;
-                            System.out.println(file.getPath());
+                            // System.out.println(file.getPath());
                         }
                     }
 
@@ -199,11 +199,10 @@ class ServerCommunicator extends Thread {
 
                 } else if (direction == 3) { // receive from server
 
-                    serverFile.delete(); // first delete the current file
-
+                    //serverFile.delete(); // first delete the current file
                     oos.writeObject(new Boolean(true)); // send "Ready"
                     oos.flush();
-                    backup = new File(root, "backup.txt");
+                    backup = new File(root, "backup1.txt");
                     Path source1 = serverFile.toPath();
                     Files.copy(source1, backup.toPath());
                     rollbackCase = 3;
@@ -222,8 +221,8 @@ class ServerCommunicator extends Thread {
                 //on prvi ceka posle sinhronizacije
                 String done = (String) ois.readObject();// ceka da se zavrsi
 
-                System.out.println();
-                System.out.println("Finished sync");
+                // System.out.println();
+                //System.out.println("Finished sync");
                 ispis("Uspesna sinhronizacija sa " + sock.getInetAddress().toString() + "za faj: " + filename + "\n", ServerLogs);
                 //gui update ovde
 
@@ -234,12 +233,12 @@ class ServerCommunicator extends Thread {
 
                 failedConnections = 0;
 
-                sleep(3000);
+                sleep(4000);
 
             } catch (ConnectException e) {
                 failedConnections++;
 
-                if (failedConnections == 3) {
+                if (failedConnections == 2) {
 
                     for (Iterator<String> iterator = ServerAppController.podservers.iterator(); iterator.hasNext();) {
                         String next = iterator.next();
@@ -352,7 +351,7 @@ class ServerCommunicator extends Thread {
         oos = new ObjectOutputStream(sock.getOutputStream());
     }
 
-    private static void ispis(String ispis, TextArea PodserverLogs) {
+    public static void ispis(String ispis, TextArea PodserverLogs) {
         Runnable r = () -> {
 
             Platform.runLater(() -> PodserverLogs.appendText(ispis + "\n"));
@@ -395,7 +394,7 @@ class ServerCommunicator extends Thread {
             // ako je slucaj da je fajl postojao uzmi bekap
             if (rollbackCase == 3) {
                 Files.copy(backup.toPath(), serverFile.toPath());
-                Files.delete(backup.toPath());
+                Files.delete(serverFile.toPath());
             }
             // ako fajl nije postojao samo obrisi bekap da ne stoji tu
             if (rollbackCase == 0) {

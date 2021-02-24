@@ -74,7 +74,7 @@ public class ServerAppController {
         }
 
         serverCommunicator.start();
-        serverRequestHandler.listenToClients();
+        serverRequestHandler.listenToClients(ServerLogs);
 
         StartServerFunction.setDisable(true);
 

@@ -4,17 +4,19 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane id="AnchorPane" prefHeight="742.0" prefWidth="1170.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="serverapp.ServerAppController">
+<AnchorPane id="AnchorPane" prefHeight="742.0" prefWidth="1170.0" style="-fx-background-color: lightblue;" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="serverapp.ServerAppController">
     <children>
         <Label fx:id="label" layoutX="126" layoutY="120" minHeight="16" minWidth="69" />
       <Label layoutX="46.0" layoutY="150.0" prefHeight="17.0" prefWidth="110.0" text="ServerAppFiles" />
       <TextArea fx:id="ServerLogs" layoutX="46.0" layoutY="471.0" prefHeight="200.0" prefWidth="1022.0" />
       <Label layoutX="46.0" layoutY="427.0" prefHeight="17.0" prefWidth="110.0" text="ServerLogs" />
       <TextArea fx:id="ServerFilesText" layoutX="46.0" layoutY="190.0" prefHeight="190.0" prefWidth="413.0" />
-      <Label alignment="CENTER" layoutX="429.0" layoutY="14.0" text="ServerApp">
+      <Label alignment="CENTER" layoutX="429.0" layoutY="14.0" text="File Sync Server">
          <font>
             <Font name="Britannic Bold" size="48.0" />
          </font>
@@ -31,5 +33,10 @@
       <Button fx:id="addPodserver" layoutX="884.0" layoutY="108.0" mnemonicParsing="false" onMouseClicked="#addNewPodserver" text="AddPodserver" />
       <TextField fx:id="socketClientPort" layoutX="46.0" layoutY="108.0" prefHeight="25.0" prefWidth="138.0" text="10002" />
       <Label layoutX="43.0" layoutY="76.0" text="Socket port for clients" />
+      <ImageView fitHeight="129.0" fitWidth="151.0" layoutX="1005.0" layoutY="10.0" pickOnBounds="true">
+         <image>
+            <Image url="@../../../../../../../../../ETF_BG.jpg" />
+         </image>
+      </ImageView>
     </children>
 </AnchorPane>

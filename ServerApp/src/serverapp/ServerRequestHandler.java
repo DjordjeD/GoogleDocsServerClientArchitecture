@@ -74,7 +74,7 @@ class ServerRequestHandler extends Thread {
 
                     temp = podserverFilePairsUpdate.remove();
                     podserverFilePairsUpdate.add(temp);
-                    System.out.println(temp.size());
+                    //System.out.println(temp.size());
                     Vector addVec = new Vector<String>();
                     addVec.add(temp.elementAt(0));
                     addVec.add(temp.elementAt(1));
@@ -91,7 +91,7 @@ class ServerRequestHandler extends Thread {
         }
     }
 
-    static void listenToClients() {
+    static void listenToClients(TextArea serverlogs) {
 
         Runnable r = () -> {
 
@@ -117,16 +117,24 @@ class ServerRequestHandler extends Thread {
 
                     if (fileName.equalsIgnoreCase("HELP")) {
                         if (!podserverFilePairsUpdate.isEmpty()) {
-                            oos.writeObject(podserverFilePairsUpdate.remove().elementAt(1));
+
+                            try {
+
+                                ServerCommunicator.ispis("klijentu crkao podserver, traiz novi", serverlogs);
+                                oos.writeObject(podserverFilePairsUpdate.remove());
+                                //oos.writeObject(new String("novi IP"));
+
+                            } catch (Exception e) {
+                                ServerCommunicator.ispis("i klijent je crkao", serverlogs);
+                            }
                         }
                         // else fatal error
 
                     } else if (fileName.equalsIgnoreCase("Podserver")) {
 
                         String ipadress = fileName;// ubacuje adresu podservera koji se sam pokrenuo ponovo
-
+                        ServerCommunicator.ispis("dodajem novi podserver " + ipadress, serverlogs);
                         ServerAppController.podservers.add(ipadress); // dodaje ip adresu u listu podservera (aktivan)
-                        // mozda ora nesto da se pokrene nzm ni ja
 
                     } else {
                         //trazi da li postoji podserver sa tim fajlom
@@ -142,6 +150,7 @@ class ServerRequestHandler extends Thread {
                             }
                         }
                         semaphore.release();
+
                         // ako ne postoji daj mu neki podserver da se prikaci
                         if (!ServerAppController.podservers.isEmpty()) {
                             String next = ServerAppController.podservers.get(0);
@@ -168,7 +177,7 @@ class ServerRequestHandler extends Thread {
                     }
 
                 } catch (Exception ex) {
-
+                    ServerCommunicator.ispis("greska server klijent", serverlogs);
                     System.out.println("serverapp.ServerRequestHandler.listenToClients()");
                 }
             }

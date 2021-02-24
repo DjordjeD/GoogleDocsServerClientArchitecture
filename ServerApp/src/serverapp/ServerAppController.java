@@ -44,12 +44,16 @@ public class ServerAppController {
 
     @FXML
     private Button addPodserver;
+    @FXML
+    private TextField socketClientPort;
 
     static Vector<String> podservers = null;
 
     @FXML
     public void initialize() {
         StartServerFunction.setDisable(true);
+
+        podservers = new Vector<String>();
     }
 
     @FXML
@@ -59,12 +63,12 @@ public class ServerAppController {
         //= args od kolko ima uzima ip adrese sve
         int numberOfThreads = Integer.parseInt(numThreads.getText()); // kolko niti puni request handler
         //serverRequestHandler = new ServerRequestHandler(Integer.parseInt(SocketPort.getText()), ServerLogs, ServerFilesText, Podservers);
-        serverCommunicator = new ServerCommunicator(ServerLogs, ServerFilesText, Podservers);
+        serverCommunicator = new ServerCommunicator(Integer.parseInt(SocketPort.getText()), ServerLogs, ServerFilesText, Podservers);
 
         //vise niti treba da se napravi;
-        Thread[] threads = new Thread[numberOfThreads];
+        Thread[] threads = new Thread[1];
         for (int i = 0; i < threads.length; i++) {
-            threads[i] = new ServerRequestHandler(Integer.parseInt(SocketPort.getText()), ServerLogs, ServerFilesText, Podservers
+            threads[i] = new ServerRequestHandler(Integer.parseInt(socketClientPort.getText()), ServerLogs, ServerFilesText, Podservers
             );
             threads[i].start();
         }
@@ -72,15 +76,15 @@ public class ServerAppController {
         serverCommunicator.start();
         serverRequestHandler.listenToClients();
 
+        StartServerFunction.setDisable(true);
+
     }
 
     @FXML
     void addNewPodserver(MouseEvent event) {
 
         Boolean flag = true;
-        String newPodserver = addPodserver.getText();
-
-        podservers = new Vector<String>();
+        String newPodserver = IPAdress.getText();
 
         if (!podservers.isEmpty()) {
             for (String podserver : podservers) {

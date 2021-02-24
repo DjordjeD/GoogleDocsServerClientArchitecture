@@ -17,6 +17,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalTime;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Scanner;
@@ -35,6 +36,7 @@ import org.apache.commons.io.FileUtils;
 class ServerCommunicator extends Thread {
 
     private static int failedConnections = 0;
+    private static int portForPodserver;
     private static final int PORT_NUMBER = 17555;
     private static String filename;
     private static String podserverIP;
@@ -44,6 +46,9 @@ class ServerCommunicator extends Thread {
     private static ObjectInputStream ois;
     private static ObjectOutputStream oos;
     private static Vector<String> nextRequest;
+    public File backup;
+    public static int rollbackCase;
+    public static File serverFile;
     @FXML
     private TextArea ServerLogs;
 
@@ -53,8 +58,8 @@ class ServerCommunicator extends Thread {
     @FXML
     private TextArea Podservers;
 
-    ServerCommunicator(TextArea ServerLogs, TextArea ServerFilesText, TextArea Podservers) {
-
+    ServerCommunicator(int port, TextArea ServerLogs, TextArea ServerFilesText, TextArea Podservers) {
+        portForPodserver = port;
         this.Podservers = Podservers;
         this.ServerFilesText = ServerFilesText;
         this.ServerLogs = ServerLogs;
@@ -71,10 +76,9 @@ class ServerCommunicator extends Thread {
                 }
                 nextRequest = ServerRequestHandler.requestQueue.remove();
                 filename = nextRequest.remove(0);
-                podserverIP = nextRequest.remove(1);
+                podserverIP = nextRequest.remove(0);
 
-                sock = new Socket(podserverIP, PORT_NUMBER);
-                ois = new ObjectInputStream(sock.getInputStream());
+                sock = new Socket(podserverIP, portForPodserver);
                 oos = new ObjectOutputStream(sock.getOutputStream()); // send directory name to server
                 Vector<String> requestVec = new Vector<String>();
 
@@ -82,20 +86,25 @@ class ServerCommunicator extends Thread {
                 requestVec.add(Integer.valueOf(2).toString());
 
                 //SyncRequests newRequest = new SyncRequests(1, filename);
-                ispis("Trenutno updateuje:" + filename + "na podserveru" + podserverIP, ServerLogs);
+                ispis("Trenutno updateuje: " + filename + " na podserveru " + podserverIP + " Vreme : " + LocalTime.now().toString(), ServerLogs);
                 oos.writeObject(requestVec);
                 oos.flush();
+                oos.close();
 
 ///--------------------------------------------------------------------------------------------------
                 //ClientAppController.ClientLogs.appendText("Ubacen zahtev od");
                 //ceka da primi da li fajl postoji na serveru
                 //oos.writeObject(new Boolean(true));
+                sock = new Socket(podserverIP, PORT_NUMBER);
+                ois = new ObjectInputStream(sock.getInputStream());
+                oos = new ObjectOutputStream(sock.getOutputStream()); // send directory name to server
+
                 Boolean existsOnPodserver = (Boolean) ois.readObject();
 
                 // skipping the base dir as it already should be set up on the server
                 //String[] children = baseDir.list();
                 File root = new File("c:\\kdp");// ovo se cita sa konzole, moze da se dodaje fajl
-                File serverFile = null;
+                serverFile = null;
 
                 if (!root.exists()) {
                     root.mkdir();
@@ -159,6 +168,7 @@ class ServerCommunicator extends Thread {
                     oos.writeObject(new Boolean(true)); // send "Ready"
                     oos.flush();
                     //rollback
+                    rollbackCase = 0;
                     receiveFile(serverFile);
 
                     oos.writeObject(new Boolean(true)); // send back ok
@@ -193,8 +203,14 @@ class ServerCommunicator extends Thread {
 
                     oos.writeObject(new Boolean(true)); // send "Ready"
                     oos.flush();
+                    backup = new File(root, "backup.txt");
+                    Path source1 = serverFile.toPath();
+                    Files.copy(source1, backup.toPath());
+                    rollbackCase = 3;
 
                     receiveFile(serverFile);
+
+                    Files.delete(backup.toPath());
 
                     oos.writeObject(new Boolean(true)); // send back ok
                     oos.flush();
@@ -225,10 +241,10 @@ class ServerCommunicator extends Thread {
 
                 if (failedConnections == 3) {
 
-                    for (Iterator<String> iterator = ServerRequestHandler.podserverList.iterator(); iterator.hasNext();) {
+                    for (Iterator<String> iterator = ServerAppController.podservers.iterator(); iterator.hasNext();) {
                         String next = iterator.next();
                         if (next.equals(sock.getInetAddress().toString())) {
-                            ServerRequestHandler.podserverList.remove(next);// proveri jel radi ovo
+                            ServerAppController.podservers.remove(next);// proveri jel radi ovo
                             Vector<String> tempVector = new Vector<String>();
                             tempVector.add(filename);
                             tempVector.add(next);
@@ -245,13 +261,21 @@ class ServerCommunicator extends Thread {
 
             } catch (SocketException e) {
 
-                System.out.println(e.getMessage());
+                e.printStackTrace();
 
             } catch (IOException e) {
-                System.out.println(e.getMessage());
+                e.printStackTrace();
 
+            } catch (RollbackException e) {
+                rollbackFile();
             } catch (Exception e) {
-                System.out.println(e.getMessage());
+                e.printStackTrace();
+                try {
+                    sleep(500);
+                    //System.out.println("serverapp.ServerCommunicator.run()");
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(ServerCommunicator.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         }
 
@@ -275,16 +299,21 @@ class ServerCommunicator extends Thread {
     }
 
     private static void receiveFile(File dir) throws Exception {
-        FileOutputStream wr = new FileOutputStream(dir);
-        byte[] outBuffer = new byte[sock.getReceiveBufferSize()];
-        int bytesReceived = 0;
-        while ((bytesReceived = ois.read(outBuffer)) > 0) {
-            wr.write(outBuffer, 0, bytesReceived);
-        }
-        wr.flush();
-        wr.close();
 
-        reinitConn();
+        try {
+            FileOutputStream wr = new FileOutputStream(dir);
+            byte[] outBuffer = new byte[sock.getReceiveBufferSize()];
+            int bytesReceived = 0;
+            while ((bytesReceived = ois.read(outBuffer)) > 0) {
+                wr.write(outBuffer, 0, bytesReceived);
+            }
+            wr.flush();
+            wr.close();
+
+            reinitConn();
+        } catch (Exception e) {
+            throw new RollbackException("done");
+        }
 
         // printDebug(false, dir);
     }
@@ -361,4 +390,19 @@ class ServerCommunicator extends Thread {
 
     }
 
+    private void rollbackFile() {
+        try {
+            // ako je slucaj da je fajl postojao uzmi bekap
+            if (rollbackCase == 3) {
+                Files.copy(backup.toPath(), serverFile.toPath());
+                Files.delete(backup.toPath());
+            }
+            // ako fajl nije postojao samo obrisi bekap da ne stoji tu
+            if (rollbackCase == 0) {
+                Files.delete(backup.toPath());
+            }
+        } catch (Exception e) {
+        }
+
+    }
 }

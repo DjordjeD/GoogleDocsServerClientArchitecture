@@ -5,14 +5,19 @@
  */
 package serverapp;
 
+import com.sun.jmx.remote.internal.ArrayQueue;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Vector;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.fxml.FXML;
@@ -25,16 +30,17 @@ import javafx.scene.control.TextArea;
 class ServerRequestHandler extends Thread {
 
     private static int port;
-    public static LinkedBlockingQueue<String> podserverList;
-    public static LinkedBlockingQueue<Vector<String>> podserverFilePairsUpdate; // prvo ide ime fajla, pa ip podservera
-    public static LinkedBlockingQueue<Vector<String>> requestQueue;
+    // public static LinkedBlockingQueue<String> podserverList;
+    public static Queue<Vector<String>> podserverFilePairsUpdate = new LinkedList<Vector<String>>(); // prvo ide ime fajla, pa ip podservera
+    public static LinkedBlockingQueue<Vector<String>> requestQueue = new LinkedBlockingQueue<Vector<String>>();
 
     //private static final int PORT_NUMBER = 10001;
     private static Socket sock;
     private static ObjectOutputStream oos;
     private static ObjectInputStream ois;
     private static ServerSocket servsock;
-
+    public static Boolean flag = false;
+    public static Vector<String> temp = new Vector<>();
     @FXML
     private TextArea ServerLogs;
 
@@ -43,15 +49,14 @@ class ServerRequestHandler extends Thread {
 
     @FXML
     private TextArea Podservers;
+    static Semaphore semaphore = new Semaphore(1);
+    static Semaphore waitSem = new Semaphore(0);
 
-    ServerRequestHandler(int parseInt, TextArea ServerLogs, TextArea ServerFilesText, TextArea Podservers) {
-        port = parseInt;
+    ServerRequestHandler(int port1, TextArea ServerLogs, TextArea ServerFilesText, TextArea Podservers) {
+        port = port1;
         this.Podservers = Podservers;
         this.ServerFilesText = ServerFilesText;
         this.ServerLogs = ServerLogs;
-        podserverList = new LinkedBlockingQueue<String>();
-        podserverFilePairsUpdate = new LinkedBlockingQueue<Vector<String>>();
-        requestQueue = new LinkedBlockingQueue<Vector<String>>();
 
     }
 
@@ -61,30 +66,43 @@ class ServerRequestHandler extends Thread {
         //ako klijent posalje help me
         // on mu vraca iz podserverFilePairs jedan par (vektor), tj daje neki server
 
-        try {
-            while (true) {
+        while (true) {
+            try {
+                semaphore.acquireUninterruptibly();
 
                 if (!podserverFilePairsUpdate.isEmpty()) {
-                    requestQueue.add(podserverFilePairsUpdate.remove());
+
+                    temp = podserverFilePairsUpdate.remove();
+                    podserverFilePairsUpdate.add(temp);
+                    System.out.println(temp.size());
+                    Vector addVec = new Vector<String>();
+                    addVec.add(temp.elementAt(0));
+                    addVec.add(temp.elementAt(1));
+
+                    requestQueue.add(addVec);
                 }
+                semaphore.release();
 
-                sleep(5000);
+                sleep(3000 + (int) Math.random() * 1000);
 
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-
-        } catch (Exception e) {
-            System.out.println("serverapp.ServerRequestHandler.run()");
         }
-
     }
 
     static void listenToClients() {
+
         Runnable r = () -> {
+
             try {
                 servsock = new ServerSocket(port);
+
             } catch (IOException ex) {
-                Logger.getLogger(ServerRequestHandler.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ServerRequestHandler.class
+                        .getName()).log(Level.SEVERE, null, ex);
             }
+
             // mozda ne terba while
             while (true) {
                 try {
@@ -107,11 +125,12 @@ class ServerRequestHandler extends Thread {
 
                         String ipadress = fileName;// ubacuje adresu podservera koji se sam pokrenuo ponovo
 
-                        podserverList.add(ipadress); // dodaje ip adresu u listu podservera (aktivan)
+                        ServerAppController.podservers.add(ipadress); // dodaje ip adresu u listu podservera (aktivan)
                         // mozda ora nesto da se pokrene nzm ni ja
 
                     } else {
                         //trazi da li postoji podserver sa tim fajlom
+                        semaphore.acquireUninterruptibly();
                         if (!podserverFilePairsUpdate.isEmpty()) {
                             for (Iterator<Vector<String>> iterator = podserverFilePairsUpdate.iterator(); iterator.hasNext();) {
                                 Vector<String> next = iterator.next();
@@ -122,9 +141,10 @@ class ServerRequestHandler extends Thread {
                                 }
                             }
                         }
-
-                        if (!podserverList.isEmpty()) {
-                            String next = podserverList.remove();
+                        semaphore.release();
+                        // ako ne postoji daj mu neki podserver da se prikaci
+                        if (!ServerAppController.podservers.isEmpty()) {
+                            String next = ServerAppController.podservers.get(0);
                             Vector<String> temp = new Vector<String>();
                             temp.add(fileName);
                             temp.add(next);
@@ -132,8 +152,12 @@ class ServerRequestHandler extends Thread {
                             oos.writeObject(next);
                             oos.flush();
 
-                            podserverFilePairsUpdate.add(temp);//dodao si u listu parova
-                            //refreshuj ispis podserver files
+                            semaphore.acquireUninterruptibly();
+
+                            podserverFilePairsUpdate.add(temp);
+                            //dodao si u listu parova
+                            semaphore.release();
+                            //refreshuj ispis podserver files       +
 
                         }
                         // else fatal error
@@ -153,7 +177,6 @@ class ServerRequestHandler extends Thread {
         // run task on different thread
         Thread t = new Thread(r);
         t.start();
-
     }
 
 }

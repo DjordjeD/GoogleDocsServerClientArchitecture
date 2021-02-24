@@ -80,7 +80,13 @@ class PodserverCommunicator extends Thread {
                 //proveri da li imas ovaj fajl na podserveru
                 File root = new File("c:\\kdp");
                 podserverFile = null;
+
+                if (!root.exists()) {
+                    root.mkdir();
+                }
+
                 String fileName = filename;
+                Boolean fileOnPodserver = false;
                 try {
                     boolean recursive = true;
 
@@ -88,9 +94,11 @@ class PodserverCommunicator extends Thread {
 
                     for (Iterator iterator = files.iterator(); iterator.hasNext();) {
                         File file = (File) iterator.next();
-                        System.out.println(file.getPath());
+                        // System.out.println(file.getPath());
                         if (file.getName().equals(fileName)) {
-                            podserverFile = file;
+                            podserverFile = new File(file.getPath());
+                            fileOnPodserver = true;
+
                         }
                     }
 
@@ -98,13 +106,11 @@ class PodserverCommunicator extends Thread {
                     e.printStackTrace();
                 }
 
-                Boolean fileOnPodserver = false;
-                if (podserverFile.exists()) {
-                    fileOnPodserver = true;
+                if (!fileOnPodserver) {
+                    podserverFile = new File(root, "novi.txt");
                 }
 
-                System.out.println("Directory: " + baseDir);
-
+                //System.out.println("Directory: " + baseDir);
                 //ako imas ili nemas vrati
                 oos.writeObject(fileOnPodserver);
                 oos.flush();
@@ -131,7 +137,7 @@ class PodserverCommunicator extends Thread {
                     oos.writeObject(new Integer(direction));
                     oos.flush();
                     // ovde kopiraj taj fajl
-                    // ako baci exception jebiga uzmi stari
+                    // ako baci exception  uzmi stari
                     rollbackCase = 1;
                     receiveFile(podserverFile);
 
@@ -142,7 +148,7 @@ class PodserverCommunicator extends Thread {
 
                     String clientfilename = (String) ois.readObject();
                     Path source = podserverFile.toPath();
-                    Files.move(source, source.resolve(clientfilename));
+                    Files.move(source, source.resolveSibling(clientfilename));
 
                 } else if (!clientHasFile && fileOnPodserver) {
                     direction = 0;
@@ -174,15 +180,14 @@ class PodserverCommunicator extends Thread {
 
                         ois.readObject();
 
-                        podserverFile.delete();
-
+                        //podserverFile.delete();
                         oos.writeObject(new Boolean(true)); // send back ok
                         oos.flush();
 
                         backup = new File(root, "backup.txt");
                         Path source1 = podserverFile.toPath();
                         Files.copy(source1, backup.toPath());
-                        rollbackCase = 3;
+                        rollbackCase = 2;
 
                         receiveFile(podserverFile);
 
@@ -209,27 +214,31 @@ class PodserverCommunicator extends Thread {
                         oos.flush();
 
                     } else {
-
                         oos.writeObject(new Integer(direction));
                         oos.flush();
                     }
+
+                } else {
+                    ispis("fajla nema nigde" + fileName, PodserverLogs);
+                    oos.writeObject(new Integer(5));
+                    oos.flush();
                 }
 
                 oos.writeObject(new String(DONE));
                 oos.flush();
 
-                System.out.print("Finished sync...");
+                // System.out.print("Finished sync...");
                 ispis("Uspesno sinhronizovao " + filename + sock.getInetAddress().toString() + " Vreme :" + java.time.LocalTime.now().toString(), PodserverLogs);
                 // loadFile(PodserverLogs);
                 //PodserverController.PodserverLogs.appendText("finished sync");
                 ois.readObject();
-
+                sleep(500);
                 oos.close();
                 ois.close();
                 sock.close();
 
             } catch (SocketException e) {
-                System.out.println("Greska" + e.getMessage());
+                e.printStackTrace();
                 try {
                     oos.close();
                     ois.close();
@@ -240,12 +249,12 @@ class PodserverCommunicator extends Thread {
 
             } catch (IOException e) {
 
-                System.out.println("Greska" + e.getMessage());
+                e.printStackTrace();
 
             } catch (RollbackException e) {
                 rollbackFile();
             } catch (Exception e) {
-                System.out.println("Greska" + e.getMessage());
+                e.printStackTrace();
             }
         }
     }
@@ -279,6 +288,7 @@ class PodserverCommunicator extends Thread {
 
             reinitConn();
         } catch (Exception ex) {
+            ex.printStackTrace();
             throw new RollbackException(DONE);
         }
     }
@@ -390,9 +400,10 @@ class PodserverCommunicator extends Thread {
                 Files.delete(backup.toPath());
             }
             if (rollbackCase == 1) {
-                Files.delete(backup.toPath());
+                Files.delete(podserverFile.toPath());
             }
         } catch (Exception e) {
+            e.printStackTrace();
         }
 
     }

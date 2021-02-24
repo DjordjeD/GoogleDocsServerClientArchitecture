@@ -54,18 +54,19 @@ class PodserverRequestHandler extends Thread {
 
                 sock = servsock.accept();
 
-                System.out.println("podserverapp.PodserverRequestHandler.run()");
+                //System.out.println("podserverapp.PodserverRequestHandler.run()");
                 ois = new ObjectInputStream(sock.getInputStream());
 
                 Vector<String> vec = new Vector<String>();
 
                 vec = (Vector<String>) ois.readObject();
+
                 //reinitConn();
+                System.out.println(vec.elementAt(0) + "i " + vec.elementAt(1));
                 newsyncRequest = new SyncRequests(Integer.parseInt(vec.elementAt(1)), vec.elementAt(0));
 
                 requestBuffer.add(newsyncRequest);
-
-                System.out.println("podserverapp.PodserverRequestHandler.run()");
+                //System.out.println("podserverapp.PodserverRequestHandler.run()");
                 ;
 
                 ois.close();

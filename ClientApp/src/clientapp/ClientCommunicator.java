@@ -12,11 +12,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import static java.lang.Thread.sleep;
 import java.net.Socket;
 import java.net.SocketException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalTime;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
@@ -218,8 +218,7 @@ public class ClientCommunicator extends Thread {
 
                 } else if (direction == 3) { // receive from server
 
-                    clientFile.delete(); // first delete the current file
-
+                    //clientFile.delete(); // first delete the current file
                     oos.writeObject(new Boolean(true)); // send "Ready"
                     oos.flush();
 
@@ -247,7 +246,7 @@ public class ClientCommunicator extends Thread {
 
                 System.out.println();
                 System.out.println("Finished sync");
-                ispis("Synced", ClientLogs);
+                ispis("Synced-Vreme: " + LocalTime.now(), ClientLogs);
                 //gui update ovde
                 // ovde fali da se ponovo loaduje fajl u gui.
                 loadFile(ClientText, clientFile);
@@ -272,7 +271,7 @@ public class ClientCommunicator extends Thread {
                         ois.close();
                         sock.close();
 
-                        sock = new Socket(ClientAppController.ipGlavnog, 10001);
+                        sock = new Socket(ClientAppController.ipGlavnog, ClientAppController.glavniServerPortStatic);
                         oos = new ObjectOutputStream(sock.getOutputStream()); // send directory name to server
                         ois = new ObjectInputStream(sock.getInputStream());
 
@@ -280,7 +279,9 @@ public class ClientCommunicator extends Thread {
 
                         Vector<String> temp = (Vector<String>) ois.readObject();
 
-                        podServerIP = temp.remove(1);
+                        podServerIP = temp.get(1);
+
+                        ispis("Novi ip podservera je" + podServerIP, ClientLogs);
 
                         oos.close();
                         ois.close();
@@ -296,13 +297,14 @@ public class ClientCommunicator extends Thread {
 
             } catch (IOException e) {
 
-            } catch (NoSuchMethodError e) {
+            } catch (RollbackException e) {
                 rollbackFile();
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
-        }//To change body of generated methods, choose Tools | Templates.
+            //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
     private static void sendFile(File dir) throws Exception {
@@ -322,7 +324,7 @@ public class ClientCommunicator extends Thread {
         // printDebug(true, dir);
     }
 
-    private static void receiveFile(File dir) throws NoSuchMethodError {// dummy exception
+    private static void receiveFile(File dir) throws RollbackException {// dummy exception
         try {
             FileOutputStream wr = new FileOutputStream(dir);
             byte[] outBuffer = new byte[sock.getReceiveBufferSize()];
@@ -335,7 +337,7 @@ public class ClientCommunicator extends Thread {
 
             reinitConn();
         } catch (Exception e) {
-            throw new NoSuchMethodError();
+            throw new RollbackException("done");
         }
 
     }
@@ -398,7 +400,12 @@ public class ClientCommunicator extends Thread {
                 sc.useDelimiter("\\Z");
                 String print;
 
-                Platform.runLater(() -> PodserverLogs.setText(sc.next()));
+                Platform.runLater(() -> {
+                    int temp = PodserverLogs.getCaretPosition();
+                    PodserverLogs.setText(sc.next());
+                    PodserverLogs.positionCaret(temp);
+
+                });
 
                 // System.out.println(sc.nextLine());
                 // append the line on the application thread
@@ -446,7 +453,7 @@ public class ClientCommunicator extends Thread {
                 Files.delete(backup.toPath());
             }
             if (rollbackCase == 0) {
-                Files.delete(backup.toPath());
+                Files.delete(clientFile.toPath());
             }
         } catch (Exception e) {
         }

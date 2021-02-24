@@ -6,11 +6,14 @@
 package clientapp;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import static java.lang.Thread.sleep;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Platform;
@@ -32,6 +35,7 @@ public class ClientAppController {
     private static ObjectInputStream ois;
     private static ServerSocket servsock;
     public static String ipGlavnog;
+    public static int glavniServerPortStatic;
 
     public static Stage stage;
 
@@ -93,7 +97,9 @@ public class ClientAppController {
                 try {
                     //4 puta pokusava
                     ipGlavnog = IPGlavnogServera.getText();
-                    sock = new Socket(ipGlavnog, Integer.parseInt(GlavniServerPort.getText()));
+                    glavniServerPortStatic = Integer.parseInt(GlavniServerPort.getText());
+                    sock = new Socket(ipGlavnog, glavniServerPortStatic);
+
                     oos = new ObjectOutputStream(sock.getOutputStream());
                     ois = new ObjectInputStream(sock.getInputStream());
 
@@ -150,7 +156,13 @@ public class ClientAppController {
 
         File file = fileChooser.showOpenDialog(stage);
         if (file != null) {
-            ispis(file.getName(), fileNameTB);
+            try {
+                ispis(file.getName(), fileNameTB);
+                File root = new File("c:\\kdp\\" + file.getName());
+                Files.copy(file.toPath(), root.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException ex) {
+                Logger.getLogger(ClientAppController.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
 
     }

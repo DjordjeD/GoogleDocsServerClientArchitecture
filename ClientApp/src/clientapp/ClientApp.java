@@ -24,10 +24,6 @@ public class ClientApp extends Application {
     public void start(Stage stage) throws Exception {
         Parent root = FXMLLoader.load(getClass().getResource("FXMLDocument.fxml"));
 
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("FXMLDocument.fxml"));
-        ClientAppController controller = loader.getController();
-        controller.setStage(stage);
-
         Scene scene = new Scene(root);
 
         stage.setScene(scene);

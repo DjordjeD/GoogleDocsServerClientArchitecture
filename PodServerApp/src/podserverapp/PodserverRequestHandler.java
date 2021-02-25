@@ -62,7 +62,7 @@ class PodserverRequestHandler extends Thread {
                 vec = (Vector<String>) ois.readObject();
 
                 //reinitConn();
-                System.out.println(vec.elementAt(0) + "i " + vec.elementAt(1));
+                System.out.println(vec.elementAt(0) + " i " + vec.elementAt(1));
                 newsyncRequest = new SyncRequests(Integer.parseInt(vec.elementAt(1)), vec.elementAt(0));
 
                 requestBuffer.add(newsyncRequest);

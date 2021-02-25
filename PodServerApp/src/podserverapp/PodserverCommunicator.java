@@ -17,6 +17,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Scanner;
@@ -34,12 +35,17 @@ import org.apache.commons.io.FileUtils;
  */
 class PodserverCommunicator extends Thread {
 
-    private static final int PORT_NUMBER = 17555;
+    private static final int PORT_NUMBER_Client = 17555;
+    private static final int PORT_NUMBER_Server = 17556;
+
+    public static int communicate = 0; //1 za klijent 2 za srevr
+
     private static final String DONE = "DONE";
     private static Socket sock;
     private static ObjectOutputStream oos;
     private static ObjectInputStream ois;
     private static ServerSocket servsock;
+    private static ServerSocket servsockServer;
     private static String baseDir;
     private static String filename;
     public static int rollbackCase;
@@ -58,7 +64,9 @@ class PodserverCommunicator extends Thread {
     public void run() {
 
         try {
-            servsock = new ServerSocket(PORT_NUMBER);
+            servsock = new ServerSocket(PORT_NUMBER_Client);
+            servsockServer = new ServerSocket(PORT_NUMBER_Server);
+
         } catch (IOException ex) {
             Logger.getLogger(PodserverCommunicator.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -66,15 +74,26 @@ class PodserverCommunicator extends Thread {
         //napravi sokete while (true) {
         while (true) {
             try {
-                sock = servsock.accept();
-                oos = new ObjectOutputStream(sock.getOutputStream());
-                ois = new ObjectInputStream(sock.getInputStream());
 
                 //dokle god ne izvuces request izvlaci
                 while (PodserverRequestHandler.requestBuffer.isEmpty()) {
                 }
-                filename = PodserverRequestHandler.requestBuffer.remove().getDirname();
 
+                filename = PodserverRequestHandler.requestBuffer.element().getDirname();
+
+                communicate = PodserverRequestHandler.requestBuffer.remove().getSentFrom();
+
+                System.out.println("izvukao sam " + filename + "" + communicate);
+
+                //znam skim komuniciram
+                if (communicate == 1) {
+                    sock = servsock.accept();
+                } else {
+                    sock = servsockServer.accept();
+                }
+
+                oos = new ObjectOutputStream(sock.getOutputStream());
+                ois = new ObjectInputStream(sock.getInputStream());
                 ispis("Trenutno proverava: " + filename + sock.getInetAddress().toString() + " Vreme :" + java.time.LocalTime.now().toString(), PodserverLogs);
 
                 //proveri da li imas ovaj fajl na podserveru
@@ -186,7 +205,7 @@ class PodserverCommunicator extends Thread {
 
                         backup = new File(root, "backup.txt");
                         Path source1 = podserverFile.toPath();
-                        Files.copy(source1, backup.toPath());
+                        Files.copy(source1, backup.toPath(), StandardCopyOption.REPLACE_EXISTING);
                         rollbackCase = 2;
 
                         receiveFile(podserverFile);
@@ -271,7 +290,11 @@ class PodserverCommunicator extends Thread {
         in.close();
         // after sending a file you need to close the socket and reopen one.
         oos.flush();
-        reinitConn();
+        if (communicate == 1) {
+            reinitConn();
+        } else {
+            reinitConn2();
+        }
     }
 
     private static void receiveFile(File dir) throws RollbackException {
@@ -285,8 +308,11 @@ class PodserverCommunicator extends Thread {
             }
             wr.flush();
             wr.close();
-
-            reinitConn();
+            if (communicate == 1) {
+                reinitConn();
+            } else {
+                reinitConn2();
+            }
         } catch (Exception ex) {
             ex.printStackTrace();
             throw new RollbackException(DONE);
@@ -298,6 +324,15 @@ class PodserverCommunicator extends Thread {
         ois.close();
         sock.close();
         sock = servsock.accept();
+        oos = new ObjectOutputStream(sock.getOutputStream());
+        ois = new ObjectInputStream(sock.getInputStream());
+    }
+
+    private static void reinitConn2() throws Exception {
+        oos.close();
+        ois.close();
+        sock.close();
+        sock = servsockServer.accept();
         oos = new ObjectOutputStream(sock.getOutputStream());
         ois = new ObjectInputStream(sock.getInputStream());
     }
@@ -396,7 +431,7 @@ class PodserverCommunicator extends Thread {
     private void rollbackFile() {
         try {
             if (rollbackCase == 2) {
-                Files.copy(backup.toPath(), podserverFile.toPath());
+                Files.copy(backup.toPath(), podserverFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
                 Files.delete(backup.toPath());
             }
             if (rollbackCase == 1) {

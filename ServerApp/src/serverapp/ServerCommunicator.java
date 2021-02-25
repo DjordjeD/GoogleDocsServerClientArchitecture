@@ -50,6 +50,7 @@ class ServerCommunicator extends Thread {
     public File backup;
     public static int rollbackCase;
     public static File serverFile;
+    public static Long l1;
     @FXML
     private TextArea ServerLogs;
 
@@ -139,7 +140,7 @@ class ServerCommunicator extends Thread {
 
                 if (existsOnClient) {
 
-                    Long l1 = serverFile.lastModified();
+                    l1 = serverFile.lastModified();
                     //upisi u fajl
 
                     vec.add(l1.toString());
@@ -195,7 +196,7 @@ class ServerCommunicator extends Thread {
 
                     ois.readObject();
 
-                    oos.writeObject(new Long(serverFile.lastModified()));
+                    oos.writeObject(l1);
                     oos.flush();
 
                 } else if (direction == 3) { // receive from server

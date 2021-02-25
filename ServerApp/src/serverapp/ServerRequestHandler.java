@@ -91,7 +91,7 @@ class ServerRequestHandler extends Thread {
         }
     }
 
-    static void listenToClients(TextArea serverlogs) {
+    static void listenToClients(TextArea serverlogs, TextArea serverfilelogs) {
 
         Runnable r = () -> {
 
@@ -164,9 +164,11 @@ class ServerRequestHandler extends Thread {
                             semaphore.acquireUninterruptibly();
 
                             podserverFilePairsUpdate.add(temp);
+
                             //dodao si u listu parova
                             semaphore.release();
-                            //refreshuj ispis podserver files       +
+                            //refreshuj ispis podserver files
+                            ServerCommunicator.ispis("file pair " + fileName + " za podserver " + next, serverfilelogs);
 
                         }
                         // else fatal error

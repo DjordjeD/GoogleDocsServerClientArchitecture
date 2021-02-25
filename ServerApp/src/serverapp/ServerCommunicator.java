@@ -17,6 +17,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalTime;
 import java.util.Collection;
 import java.util.Iterator;
@@ -37,7 +38,7 @@ class ServerCommunicator extends Thread {
 
     private static int failedConnections = 0;
     private static int portForPodserver;
-    private static final int PORT_NUMBER = 17555;
+    private static final int PORT_NUMBER = 17556;
     private static String filename;
     private static String podserverIP;
     private static String fullDirName;
@@ -204,7 +205,7 @@ class ServerCommunicator extends Thread {
                     oos.flush();
                     backup = new File(root, "backup1.txt");
                     Path source1 = serverFile.toPath();
-                    Files.copy(source1, backup.toPath());
+                    Files.copy(source1, backup.toPath(), StandardCopyOption.REPLACE_EXISTING);
                     rollbackCase = 3;
 
                     receiveFile(serverFile);
@@ -217,6 +218,8 @@ class ServerCommunicator extends Thread {
                     Long updateLastModified = (Long) ois.readObject(); // update the last modified date for this file from
                     serverFile.setLastModified(updateLastModified);
 
+                } else if (direction == 5) {
+                    ispis("fajla nema nigde" + filename, ServerLogs);
                 }
                 //on prvi ceka posle sinhronizacije
                 String done = (String) ois.readObject();// ceka da se zavrsi
@@ -393,7 +396,7 @@ class ServerCommunicator extends Thread {
         try {
             // ako je slucaj da je fajl postojao uzmi bekap
             if (rollbackCase == 3) {
-                Files.copy(backup.toPath(), serverFile.toPath());
+                Files.copy(backup.toPath(), serverFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
                 Files.delete(serverFile.toPath());
             }
             // ako fajl nije postojao samo obrisi bekap da ne stoji tu

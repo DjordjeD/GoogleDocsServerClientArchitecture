@@ -50,6 +50,7 @@ public class ClientCommunicator extends Thread {
     public static int failedConnections = 0;
     public static int rollbackCase;
     public static File clientFile;
+    public static Long l1;
 
     public File backup;
 
@@ -71,7 +72,7 @@ public class ClientCommunicator extends Thread {
     public void run() {
 
         listenToUpdate(ClientText);
-        System.out.println("clientapp.ClientCommunicator.run()");
+        //System.out.println("clientapp.ClientCommunicator.run()");
         while (true) {
 
             try {
@@ -121,7 +122,7 @@ public class ClientCommunicator extends Thread {
                         if (file.getName().equals(fileName)) {
                             clientFile = new File(file.getPath());
                             existsOnClient = true;
-                            System.out.println(file.getPath());
+                            //System.out.println(file.getPath());
                         }
                     }
 
@@ -136,13 +137,13 @@ public class ClientCommunicator extends Thread {
 
                 if (existsOnClient) {
 
-                    Long l1 = clientFile.lastModified();
+                    l1 = clientFile.lastModified();
                     //upisi u fajl
                     if (!ClientText.getText().isEmpty() && update) {
                         try {
 
                             FileOutputStream outputStream = new FileOutputStream(clientFile);
-                            System.out.println(ClientText.getText());
+                            //  System.out.println(ClientText.getText());
                             byte[] strToBytes = ClientText.getText().getBytes();
                             outputStream.write(strToBytes);
 
@@ -211,10 +212,10 @@ public class ClientCommunicator extends Thread {
                     ois.readObject();
 
                     sendFile(clientFile);
-
+                    System.out.println("poslao fajl");
                     ois.readObject();
 
-                    oos.writeObject(new Long(clientFile.lastModified()));
+                    oos.writeObject(l1);
                     oos.flush();
 
                 } else if (direction == 3) { // receive from server
@@ -230,7 +231,7 @@ public class ClientCommunicator extends Thread {
                     rollbackCase = 3;
 
                     receiveFile(clientFile);
-                    System.out.println("prosao sam ovaj deo");
+                    System.out.println("primio fajl");
                     Files.delete(backup.toPath());
 
                     oos.writeObject(new Boolean(true)); // send back ok
@@ -259,9 +260,11 @@ public class ClientCommunicator extends Thread {
                 ois.close();
                 sock.close();
                 failedConnections = 0;
-                sleep(3000);
+                System.out.println("nije se desio exceptio");
+                sleep(5000);
 
             } catch (SocketException e) {
+                e.printStackTrace();
 
                 try {
                     failedConnections++;

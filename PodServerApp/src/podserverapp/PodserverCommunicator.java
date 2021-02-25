@@ -83,8 +83,7 @@ class PodserverCommunicator extends Thread {
 
                 communicate = PodserverRequestHandler.requestBuffer.remove().getSentFrom();
 
-                System.out.println("izvukao sam " + filename + "" + communicate);
-
+                //System.out.println("izvukao sam " + filename + "" + communicate);
                 //znam skim komuniciram
                 if (communicate == 1) {
                     sock = servsock.accept();
@@ -177,14 +176,17 @@ class PodserverCommunicator extends Thread {
 
                     ois.readObject();
 
+                    Long temp = podserverFile.lastModified();
+                    String tempName = podserverFile.getName();
+
                     sendFile(podserverFile);
 
                     ois.readObject();
 
-                    oos.writeObject(new Long(podserverFile.lastModified()));
+                    oos.writeObject(temp);
                     oos.flush();
 
-                    oos.writeObject(podserverFile.getName());
+                    oos.writeObject(tempName);
                     oos.flush();
 
                     ois.readObject();
@@ -209,7 +211,7 @@ class PodserverCommunicator extends Thread {
                         rollbackCase = 2;
 
                         receiveFile(podserverFile);
-
+                        System.out.println("dobio");
                         Files.delete(backup.toPath());
 
                         oos.writeObject(new Boolean(true)); // send back ok
@@ -224,12 +226,12 @@ class PodserverCommunicator extends Thread {
                         oos.flush();
 
                         ois.readObject();
-
+                        Long temp = podserverFile.lastModified();
                         sendFile(podserverFile);
-
+                        System.out.println("poslao");
                         ois.readObject();
 
-                        oos.writeObject(new Long(podserverFile.lastModified()));
+                        oos.writeObject(temp);
                         oos.flush();
 
                     } else {
@@ -251,6 +253,7 @@ class PodserverCommunicator extends Thread {
                 // loadFile(PodserverLogs);
                 //PodserverController.PodserverLogs.appendText("finished sync");
                 ois.readObject();
+                System.out.println("nije se desio exception");
                 sleep(500);
                 oos.close();
                 ois.close();

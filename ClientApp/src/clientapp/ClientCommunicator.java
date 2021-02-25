@@ -16,6 +16,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalTime;
 import java.util.Collection;
 import java.util.Date;
@@ -127,7 +128,7 @@ public class ClientCommunicator extends Thread {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-
+                System.out.println("saljem dal postojim na klijentu");
                 oos.writeObject(existsOnClient);
                 oos.flush();
 
@@ -225,11 +226,11 @@ public class ClientCommunicator extends Thread {
                     //make a backup in case something goes wrong when sending
                     backup = new File(root, "backup.txt");
                     Path source1 = clientFile.toPath();
-                    Files.copy(source1, backup.toPath());
+                    Files.copy(source1, backup.toPath(), StandardCopyOption.REPLACE_EXISTING);
                     rollbackCase = 3;
 
                     receiveFile(clientFile);
-
+                    System.out.println("prosao sam ovaj deo");
                     Files.delete(backup.toPath());
 
                     oos.writeObject(new Boolean(true)); // send back ok
@@ -238,6 +239,8 @@ public class ClientCommunicator extends Thread {
                     Long updateLastModified = (Long) ois.readObject(); // update the last modified date for this file from
                     clientFile.setLastModified(updateLastModified);
 
+                } else if (direction == 5) {
+                    ispis("nema nigde fajla", ClientLogs);
                 }
                 //on prvi ceka posle sinhronizacije
                 String done = (String) ois.readObject();// ceka da se zavrsi
